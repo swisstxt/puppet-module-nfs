@@ -21,11 +21,13 @@ class nfs {
   service{[ 'portmap', 'nfs', 'nfslock' ]:
     ensure => running,
     enable => true,
+    hasstatus => true,
     require => Package['nfs-utils'],
   }
   service{[ 'rpcgssd', 'rpcidmapd', 'rpcsvcgssd' ]:
     ensure => stopped,
     enable => false,
+    hasstatus => true,
     require => Package['nfs-utils'],
   }
 }
