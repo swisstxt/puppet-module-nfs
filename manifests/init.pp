@@ -18,16 +18,43 @@ class nfs {
   package{'nfs-utils':
     ensure => installed,
   }
-  service{[ 'portmap', 'nfs', 'nfslock' ]:
-    ensure => running,
-    enable => true,
-    hasstatus => true,
-    require => Package['nfs-utils'],
+  case $lsbmajdistrelease {
+    5: {
+      service{'portmap':
+        ensure    => running,
+        enable    => true,
+        hasstatus => true,
+        require   => Package['nfs-utils'],
+      }
+    }
+    default: {
+      package{'rpcbind':
+        ensure => installed,
+      } ->
+      service{'rpcbind':
+        ensure    => running,
+        enable    => true,
+        hasstatus => true,
+      }
+      service{[
+        'rpcgssd',
+        'rpcidmapd',
+        'rpcsvcgssd',
+      ]:
+        ensure    => stopped,
+        enable    => false,
+        hasstatus => true,
+        require   => Package['nfs-utils'],
+      }
+    }
   }
-  service{[ 'rpcgssd', 'rpcidmapd', 'rpcsvcgssd' ]:
-    ensure => stopped,
-    enable => false,
+  service{[
+    'nfs',
+    'nfslock',
+  ]:
+    ensure    => running,
+    enable    => true,
     hasstatus => true,
-    require => Package['nfs-utils'],
+    require   => Package['nfs-utils'],
   }
 }
